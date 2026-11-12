@@ -1,65 +1,113 @@
 # Local build and setup (Windows 11)
 
 Personal notes and helper scripts for building NaturalVoiceSAPIAdapter v0.2.11 from source and
-registering it without the released installer or zip. Nothing in the adapter's own source is changed.
+registering it without the released installer or zip. The adapter's source code is not changed; the only
+edit outside this folder is a build setting (see "About the branch").
 Built and verified on Windows 11 with Visual Studio (v145 toolset) on 2026-11-12.
 
 The released binaries have been reported as false positives by antivirus products
 (see upstream issues #122, #96, #107, #87). A local build avoids the downloaded-file mark and the
 released hash, but an unsigned build is not guaranteed to stay clean.
 
+## Quick start
+
+Opening the solution in Visual Studio and building it there is **not** required. Use these three steps
+from a normal (non-administrator) PowerShell window:
+
+```powershell
+# 1. Get the code (the branch has the scripts and the no-auto-register build setting)
+git clone --recurse-submodules --branch local-build-scripts https://github.com/citsuresh/NaturalVoiceSAPIAdapter.git
+cd NaturalVoiceSAPIAdapter\LocalSetup
+
+# 2. Build x64 and x86 and copy the result to a permanent install folder
+.\Build-And-Deploy.ps1
+
+# 3. Register it, from the install folder (not from the repository)
+cd C:\Docs\Tools\NaturalVoiceSAPIAdapter      # or the folder you chose in step 2
+.\Configure.ps1                               # menu; offers to register, UAC prompt appears
+```
+
+Step 2 asks for the install folder (Enter accepts `C:\Docs\Tools\NaturalVoiceSAPIAdapter`). Step 3 can
+also be `Register.bat`, run as administrator. Building never registers anything.
+
 ## Prerequisites
 
+- Git, and a PowerShell window with the execution policy allowing local scripts
+  (`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` if scripts are blocked).
 - Visual Studio 2026 with the **Desktop development with C++** workload: MSVC v145 build tools for
   x86/x64, ATL, and a Windows 11 SDK (10.0.26100.0 was used). Visual Studio 2022 has only v143 and
   cannot build these projects as configured.
-- `nuget.exe` (for example `winget install Microsoft.NuGet`).
+- `nuget.exe` on `PATH` (for example `winget install Microsoft.NuGet`).
 
-## Build
+## Build-And-Deploy.ps1
+
+Run from `LocalSetup`. It finds MSBuild through `vswhere`, initialises the submodules, restores the
+NuGet packages, builds `Release` for x64 and x86 (about 3 to 5 minutes the first time), and copies the
+result to the install folder: `x64\`, `x86\`, `LICENSE.txt`, `Configure.ps1`, `Register.bat`,
+`Unregister.bat`. The codec DLL is left out (it can cause a "GStreamer DLL not found" error; the
+project's CI also excludes it). It never registers anything and never touches the registry.
+
+| Option | Meaning |
+| --- | --- |
+| `-Target <folder>` | Install folder. If omitted you are asked (default `C:\Docs\Tools\NaturalVoiceSAPIAdapter`). |
+| `-SkipBuild` | Copy what is already in `out\x64` and `out\x86` without building. |
+| `-Configuration <name>` | Build configuration. Default `Release`. |
+| `-Force` | Do not ask for confirmation. |
+| `-WhatIf` | Show what would be built and copied, and change nothing. |
 
 ```powershell
-git clone --recurse-submodules https://github.com/citsuresh/NaturalVoiceSAPIAdapter.git
-cd NaturalVoiceSAPIAdapter
-git checkout v0.2.11
-git submodule update --init --recursive
+.\Build-And-Deploy.ps1                                   # prompts for the folder
+.\Build-And-Deploy.ps1 -Target D:\Tools\NVSA -Force      # no prompts
+.\Build-And-Deploy.ps1 -Target D:\Tools\NVSA -SkipBuild  # redeploy the last build
+.\Build-And-Deploy.ps1 -WhatIf                            # dry run
 ```
 
-The main project registers its output with `regsvr32` after each build, which fails when not elevated
-(MSB8011). To build without registering, temporarily change `<RegisterOutput>true</RegisterOutput>`
-to `false` in `NaturalVoiceSAPIAdapter\NaturalVoiceSAPIAdapter.vcxproj`, build, then revert it with
-`git checkout -- NaturalVoiceSAPIAdapter\NaturalVoiceSAPIAdapter.vcxproj`.
+If the DLLs in the target folder are currently registered, the script stops and asks you to run
+`Unregister.bat` first (Windows locks registered DLLs, and the registry points at that folder). To
+update an installed copy: `Unregister.bat`, run the script again, then register again.
+
+### About the branch
+
+The `local-build-scripts` branch is upstream v0.2.11 (plus one later upstream commit that only touches
+release notes) with `LocalSetup\` added and one change to
+`NaturalVoiceSAPIAdapter\NaturalVoiceSAPIAdapter.vcxproj`: `<RegisterOutput>` is `false` in all six
+configurations. Upstream builds run `regsvr32` on the output after every build, which fails when not
+elevated (MSB8011) and, when elevated, registers the DLL from `out\`. On this branch a build never
+registers anything; registration happens only through `Register.bat`, `Configure.ps1` or the installer.
+If you build from the unmodified upstream tag instead, set `RegisterOutput` to `false` first.
+
+### Building by hand (not needed if you use the script)
 
 ```powershell
 $msbuild = 'C:\Program Files\Microsoft Visual Studio\<version>\<edition>\MSBuild\Current\Bin\MSBuild.exe'
-& $msbuild NaturalVoiceSAPIAdapter.sln /p:Configuration=Release /p:Platform=x64 /t:NaturalVoiceSAPIAdapter
-& $msbuild NaturalVoiceSAPIAdapter.sln /p:Configuration=Release /p:Platform=x86 /t:NaturalVoiceSAPIAdapter
+nuget restore NaturalVoiceSAPIAdapter.sln
+& $msbuild NaturalVoiceSAPIAdapter.sln /p:Configuration=Release /p:Platform=x64 /t:NaturalVoiceSAPIAdapter "/p:OutDir=$PWD\out\x64\\"
+& $msbuild NaturalVoiceSAPIAdapter.sln /p:Configuration=Release /p:Platform=x86 /t:NaturalVoiceSAPIAdapter "/p:OutDir=$PWD\out\x86\\"
 ```
 
 Notes:
 
 - Build only the `NaturalVoiceSAPIAdapter` target. A solution-level `/t:Rebuild` deletes the output and
   fails on the installer project's missing YY-Thunks package.
-- Output is in `out\x64` and `out\x86`.
+- Output is in `out\x64` and `out\x86` (the `OutDir` setting above; without it the output goes to
+  `x64\Release` and `Release`).
 - On Windows 10 build 17763 and later, the Azure Speech SDK shim and SpeechSDKPatcher are not needed.
 - Optional installer UI: run `nuget restore Installer -SolutionDirectory .`, then build the `Installer`
   project for `x86`.
 
-## Install
+## Register and uninstall
 
-Copy the following into one permanent folder, for example `C:\Tools\NaturalVoiceSAPIAdapter`:
+Do this from the install folder that `Build-And-Deploy.ps1` filled, not from the repository:
 
-```
-x64\   all files from out\x64 except the codec DLL (see below)
-x86\   all files from out\x86 except the codec DLL
-LICENSE.txt
-Configure.ps1, Register.bat, Unregister.bat   (from this folder)
-```
+- **Register:** run `Register.bat` as administrator (registers the 64-bit and 32-bit DLLs), or run
+  `Configure.ps1`, which shows the status on start and offers to register what is missing.
+- **Settings:** run `Configure.ps1` at any time (see below).
+- **Uninstall:** run `Unregister.bat` as administrator. Do this before moving or deleting the install
+  folder or before redeploying into it: the registry stores absolute paths. Per-user settings stay in
+  `HKCU\Software\NaturalVoiceSAPIAdapter` and the cache in `%LOCALAPPDATA%\NaturalVoiceSAPIAdapter`;
+  delete them yourself for a clean removal.
 
-The codec DLL and `TtsApplication.exe` were left out (the project's own CI also excludes the codec DLL).
-The registry stores absolute paths, so run `Unregister.bat` before moving or deleting the folder.
-
-1. Run `Register.bat` as administrator. It registers the 64-bit and 32-bit DLLs.
-2. Run `Configure.ps1` (right-click, Run with PowerShell) to check registration and change settings.
+`TtsApplication.exe` (flagged by Defender in the released zip) is not part of this build or deploy.
 
 ## Configure.ps1
 
