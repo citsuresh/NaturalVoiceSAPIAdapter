@@ -2,7 +2,7 @@
 
 Personal notes and helper scripts for building NaturalVoiceSAPIAdapter v0.2.11 from source and
 registering it without the released installer or zip. The adapter's source code is not changed; the only
-edit outside this folder is a build setting (see "About the branch").
+additions outside this folder are `Directory.Build.targets` (see "About this fork") and a note at the top of the root README.
 Built and verified on Windows 11 with Visual Studio (v145 toolset) on 2026-11-12.
 
 The released binaries have been reported as false positives by antivirus products
@@ -15,8 +15,8 @@ Opening the solution in Visual Studio and building it there is **not** required.
 from a normal (non-administrator) PowerShell window:
 
 ```powershell
-# 1. Get the code (the branch has the scripts and the no-auto-register build setting)
-git clone --recurse-submodules --branch local-build-scripts https://github.com/citsuresh/NaturalVoiceSAPIAdapter.git
+# 1. Get the code
+git clone --recurse-submodules https://github.com/citsuresh/NaturalVoiceSAPIAdapter.git
 cd NaturalVoiceSAPIAdapter\LocalSetup
 
 # 2. Build x64 and x86 and copy the result to a permanent install folder
@@ -66,23 +66,26 @@ If the DLLs in the target folder are currently registered, the script stops and 
 `Unregister.bat` first (Windows locks registered DLLs, and the registry points at that folder). To
 update an installed copy: `Unregister.bat`, run the script again, then register again.
 
-### About the branch
+### About this fork
 
-The `local-build-scripts` branch is upstream v0.2.11 (plus one later upstream commit that only touches
-release notes) with `LocalSetup\` added and one change to
-`NaturalVoiceSAPIAdapter\NaturalVoiceSAPIAdapter.vcxproj`: `<RegisterOutput>` is `false` in all six
-configurations. Upstream builds run `regsvr32` on the output after every build, which fails when not
-elevated (MSB8011) and, when elevated, registers the DLL from `out\`. On this branch a build never
-registers anything; registration happens only through `Register.bat`, `Configure.ps1` or the installer.
-If you build from the unmodified upstream tag instead, set `RegisterOutput` to `false` first.
+This fork is upstream v0.2.11 (plus one later upstream commit that only touches release notes) with two
+additions: this `LocalSetup\` folder and a repo-root `Directory.Build.targets`. No upstream file is
+modified, so upstream updates can be merged without conflicts.
+
+Upstream builds run `regsvr32` on the output after every build, which fails when not elevated
+(MSB8011) and, when elevated, registers the DLL from `out\`. `Directory.Build.targets` turns that off
+only when the build is given `/p:NvsaNoRegister=true`, which `Build-And-Deploy.ps1` always passes. A
+build started that way never registers anything; registration happens only through `Register.bat`,
+`Configure.ps1` or the installer. A plain build (for example F5 in Visual Studio) behaves exactly as
+upstream.
 
 ### Building by hand (not needed if you use the script)
 
 ```powershell
 $msbuild = 'C:\Program Files\Microsoft Visual Studio\<version>\<edition>\MSBuild\Current\Bin\MSBuild.exe'
 nuget restore NaturalVoiceSAPIAdapter.sln
-& $msbuild NaturalVoiceSAPIAdapter.sln /p:Configuration=Release /p:Platform=x64 /t:NaturalVoiceSAPIAdapter "/p:OutDir=$PWD\out\x64\\"
-& $msbuild NaturalVoiceSAPIAdapter.sln /p:Configuration=Release /p:Platform=x86 /t:NaturalVoiceSAPIAdapter "/p:OutDir=$PWD\out\x86\\"
+& $msbuild NaturalVoiceSAPIAdapter.sln /p:Configuration=Release /p:Platform=x64 /t:NaturalVoiceSAPIAdapter /p:NvsaNoRegister=true "/p:OutDir=$PWD\out\x64\\"
+& $msbuild NaturalVoiceSAPIAdapter.sln /p:Configuration=Release /p:Platform=x86 /t:NaturalVoiceSAPIAdapter /p:NvsaNoRegister=true "/p:OutDir=$PWD\out\x86\\"
 ```
 
 Notes:

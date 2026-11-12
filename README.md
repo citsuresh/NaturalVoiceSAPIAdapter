@@ -2,6 +2,8 @@
 
 [查看中文文档请点击这里](README.zh.md)
 
+> **About this fork:** it adds scripts to build the adapter locally and register it on Windows 11 without the released installer. See [LocalSetup/README.md](LocalSetup/README.md). The rest of this page is the upstream README.
+
 An [SAPI 5 text-to-speech (TTS) engine][1] that can utilize the [natural/neural voices][2] provided by the [Azure AI Speech Service][3], including:
 
 - Installable natural voices for Narrator on Windows 11

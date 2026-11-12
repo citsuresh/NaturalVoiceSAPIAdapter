@@ -174,7 +174,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\NaturalVoiceSAPIAdapter.def</ModuleDefinitionFile>
-      <RegisterOutput>false</RegisterOutput>
+      <RegisterOutput>true</RegisterOutput>
       <PerUserRedirection>false</PerUserRedirection>
       <DelayLoadDLLs>Microsoft.CognitiveServices.Speech.core.dll</DelayLoadDLLs>
       <AdditionalDependencies>libcrypto.lib;libssl.lib;crypt32.lib;RuntimeObject.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -214,7 +214,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\NaturalVoiceSAPIAdapter.def</ModuleDefinitionFile>
-      <RegisterOutput>false</RegisterOutput>
+      <RegisterOutput>true</RegisterOutput>
       <PerUserRedirection>false</PerUserRedirection>
       <DelayLoadDLLs>Microsoft.CognitiveServices.Speech.core.dll</DelayLoadDLLs>
       <AdditionalDependencies>libcrypto.lib;libssl.lib;crypt32.lib;RuntimeObject.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -255,7 +255,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\NaturalVoiceSAPIAdapter.def</ModuleDefinitionFile>
-      <RegisterOutput>false</RegisterOutput>
+      <RegisterOutput>true</RegisterOutput>
       <PerUserRedirection>false</PerUserRedirection>
       <DelayLoadDLLs>Microsoft.CognitiveServices.Speech.core.dll</DelayLoadDLLs>
       <AdditionalDependencies>libcrypto.lib;libssl.lib;crypt32.lib;RuntimeObject.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -298,7 +298,7 @@
       <ModuleDefinitionFile>.\NaturalVoiceSAPIAdapter.def</ModuleDefinitionFile>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <RegisterOutput>false</RegisterOutput>
+      <RegisterOutput>true</RegisterOutput>
       <PerUserRedirection>false</PerUserRedirection>
       <DelayLoadDLLs>Microsoft.CognitiveServices.Speech.core.dll</DelayLoadDLLs>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
@@ -340,7 +340,7 @@
       <ModuleDefinitionFile>.\NaturalVoiceSAPIAdapter.def</ModuleDefinitionFile>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <RegisterOutput>false</RegisterOutput>
+      <RegisterOutput>true</RegisterOutput>
       <PerUserRedirection>false</PerUserRedirection>
       <DelayLoadDLLs>Microsoft.CognitiveServices.Speech.core.dll</DelayLoadDLLs>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
@@ -383,7 +383,7 @@
       <ModuleDefinitionFile>.\NaturalVoiceSAPIAdapter.def</ModuleDefinitionFile>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <RegisterOutput>false</RegisterOutput>
+      <RegisterOutput>true</RegisterOutput>
       <PerUserRedirection>false</PerUserRedirection>
       <DelayLoadDLLs>Microsoft.CognitiveServices.Speech.core.dll</DelayLoadDLLs>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>

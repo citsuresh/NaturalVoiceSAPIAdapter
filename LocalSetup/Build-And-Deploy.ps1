@@ -115,7 +115,7 @@ if (-not $SkipBuild) {
             Write-Host "`nBuilding $($a.Name)..."
             $ErrorActionPreference = 'Continue'
             & $msbuild (Join-Path $repo 'NaturalVoiceSAPIAdapter.sln') -nologo -v:minimal `
-                "/p:Configuration=$Configuration" "/p:Platform=$($a.Platform)" "/p:OutDir=$repo\out\$($a.Name)\\" `
+                "/p:Configuration=$Configuration" "/p:Platform=$($a.Platform)" "/p:OutDir=$repo\out\$($a.Name)\\" '/p:NvsaNoRegister=true' `
                 '/t:NaturalVoiceSAPIAdapter' 2>&1 | ForEach-Object { "$_" }
             $buildExit = $LASTEXITCODE
             $ErrorActionPreference = 'Stop'

@@ -1,0 +1,9 @@
+<Project>
+  <!-- Used by LocalSetup\Build-And-Deploy.ps1 (passes /p:NvsaNoRegister=true). Stops the linker's
+       post-build regsvr32 so a build never registers the DLL. Without the property, nothing changes. -->
+  <ItemDefinitionGroup Condition="'$(NvsaNoRegister)' == 'true'">
+    <Link>
+      <RegisterOutput>false</RegisterOutput>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>
